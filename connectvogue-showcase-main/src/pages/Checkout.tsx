@@ -26,6 +26,13 @@ const Checkout = () => {
   
   const [deliveryOption, setDeliveryOption] = useState('standard');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const getImageUrl = (image?: string) => {
+  if (!image) return "/placeholder.png";
+  return image.startsWith("http")
+    ? image
+    : `http://localhost:5000${image}`;
+};
+
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -314,10 +321,11 @@ const Checkout = () => {
                     {items.map((item) => (
                       <div key={item.product.id} className="flex gap-3">
                         <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="w-16 h-20 object-cover rounded"
-                        />
+  src={getImageUrl(item.product.image)}
+  alt={item.product.name}
+  className="w-16 h-20 object-cover rounded"
+/>
+
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm line-clamp-1">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
