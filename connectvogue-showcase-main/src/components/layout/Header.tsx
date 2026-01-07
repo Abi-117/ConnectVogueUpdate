@@ -4,6 +4,7 @@ import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logosamsel.png";
+import { safeFetch } from "@/api/fetchClient";
 
 interface Category {
   _id: string;
@@ -22,11 +23,10 @@ export const Header = () => {
 
   /* Fetch categories */
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then((res) => res.json())
-      .then(setCategories)
-      .catch(console.error);
-  }, []);
+  safeFetch<Category[]>("/api/categories")
+    .then(setCategories)
+    .catch(console.error);
+}, []);
 
   /* Scroll bg change only */
   useEffect(() => {
