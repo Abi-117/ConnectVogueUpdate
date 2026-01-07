@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { safeFetch } from "../../src/api/fetchClient";
 
 interface Product {
   _id: string;
@@ -16,6 +15,8 @@ export default function AdminPendingProducts() {
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const [approvedIds, setApprovedIds] = useState<string[]>([]);
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
+
   // 🔹 Fetch pending products
   const fetchPendingProducts = async () => {
     try {
@@ -25,12 +26,17 @@ export default function AdminPendingProducts() {
         return;
       }
 
-      // ✅ replaced fetch with safeFetch
-      const data = await safeFetch<Product[]>("/api/products?status=pending", {
+      const res = await fetch(`${BASE_URL}/api/products?status=pending`, {
         headers: { Authorization: "Bearer " + token },
       });
 
-      setProducts(data || []);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+
+      const data = await res.json();
+      setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch pending products:", err);
       alert("❌ Failed to fetch pending products. Check console for details.");
@@ -58,11 +64,17 @@ export default function AdminPendingProducts() {
 
       setLoadingIds((prev) => [...prev, id]);
 
-      // ✅ replaced fetch with safeFetch
-      const updatedProduct = await safeFetch<Product>(`/api/products/approve/${id}`, {
+      const res = await fetch(`${BASE_URL}/api/products/approve/${id}`, {
         method: "PUT",
         headers: { Authorization: "Bearer " + token },
       });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+
+      const updatedProduct = await res.json();
 
       setApprovedIds((prev) => [...prev, updatedProduct._id]);
       setLoadingIds((prev) => prev.filter((i) => i !== id));
@@ -90,7 +102,7 @@ export default function AdminPendingProducts() {
           <div key={p._id} className="border rounded-xl p-4 shadow bg-white">
             {p.image && (
               <img
-                src={`${p.image}`} // ✅ keep content same, safeFetch handles URL
+                src={p.image.startsWith("http") ? p.image : `${BASE_URL}${p.image}`}
                 alt={p.name}
                 className="w-full h-40 object-cover rounded mb-3"
               />
