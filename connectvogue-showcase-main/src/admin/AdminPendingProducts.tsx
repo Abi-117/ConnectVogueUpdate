@@ -15,7 +15,7 @@ export default function AdminPendingProducts() {
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const [approvedIds, setApprovedIds] = useState<string[]>([]);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
+  const BASE_URL = "https://connectvogue.onrender.com";
 
   // 🔹 Fetch pending products
   const fetchPendingProducts = async () => {
