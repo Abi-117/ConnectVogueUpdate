@@ -15,7 +15,6 @@ interface Product {
 const VendorProducts = () => {
   const token = localStorage.getItem("vendorToken");
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_BASE_URL; // local or Render URL
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +26,10 @@ const VendorProducts = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const data = await safeFetch<Product[]>(`${API_URL}/products/vendor`, {
+        const data = await safeFetch<Product[]>("/api/products/vendor", {
           headers: { Authorization: "Bearer " + token },
         });
-        // always ensure array to avoid null.length / null.map crash
+        // fallback empty array
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch vendor products", err);
@@ -41,7 +40,7 @@ const VendorProducts = () => {
     };
 
     fetchProducts();
-  }, [API_URL, token]);
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -67,7 +66,7 @@ const VendorProducts = () => {
             <div key={p._id} className="bg-white rounded-xl shadow p-4">
               {p.image && (
                 <img
-                  src={p.image.startsWith("http") ? p.image : `${API_URL}${p.image}`}
+                  src={p.image.startsWith("http") ? p.image : `${import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")}${p.image}`}
                   alt={p.name}
                   className="w-full h-40 object-cover rounded mb-3"
                 />
