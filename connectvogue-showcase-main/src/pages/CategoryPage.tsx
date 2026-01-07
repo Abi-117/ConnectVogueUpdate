@@ -34,21 +34,31 @@ const CategoryPage = () => {
   const [sortBy, setSortBy] = useState('Featured');
 
   // 🔥 Fetch products from backend
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProductsByCategory(categorySlug);
-        setProducts(data);
-      } catch (err) {
-        console.error('Category fetch failed', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+ useEffect(() => {
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProductsByCategory(categorySlug);
 
-    loadProducts();
-  }, [categorySlug]);
+      // normalize image URLs
+      const normalized = data.map((p: any) => ({
+        ...p,
+        image: p.image?.startsWith("http")
+          ? p.image
+          : `https://connectvogue.onrender.com${p.image.startsWith("/") ? "" : "/"}${p.image}`,
+      }));
+
+      setProducts(normalized);
+    } catch (err) {
+      console.error('Category fetch failed', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadProducts();
+}, [categorySlug]);
+
 
   // 🔥 Filters (frontend only)
   const filteredProducts = useMemo(() => {

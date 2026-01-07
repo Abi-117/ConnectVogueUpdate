@@ -17,11 +17,14 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const imageUrl = product.image
-  ? product.image.startsWith('http')
+ const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
+
+const imageUrl = product.image
+  ? product.image.startsWith("http")
     ? product.image
-    : `http://localhost:5000${product.image}`
-  : '/placeholder.png'; 
+    : `${BASE_URL}${product.image.startsWith("/") ? "" : "/"}${product.image}`
+  : '/placeholder.png';
+
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
