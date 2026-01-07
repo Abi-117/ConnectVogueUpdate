@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { safeFetch } from "../../src/api/fetchClient";
 
-/* ================= TYPES ================= */
-
 interface Category {
   _id: string;
   name: string;
@@ -29,8 +27,6 @@ interface Product {
   image?: File | null;
 }
 
-/* ================= CONSTANTS ================= */
-
 const CATEGORY_SIZES: Record<string, string[]> = {
   "Men's Fashion": ["XS", "S", "M", "L", "XL", "XXL"],
   "Women's Fashion": ["XS", "S", "M", "L", "XL"],
@@ -41,8 +37,6 @@ const CATEGORY_SIZES: Record<string, string[]> = {
   "Seasonal Gifts": ["Small", "Medium", "Large"],
   "Home & Lifestyle": ["Small", "Medium", "Large", "XL"],
 };
-
-/* ================= COMPONENT ================= */
 
 export default function VendorAddProduct() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -60,8 +54,6 @@ export default function VendorAddProduct() {
   const [colorHex, setColorHex] = useState("#000000");
   const [loading, setLoading] = useState(false);
 
-  /* ================= FETCH CATEGORIES ================= */
-
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -71,7 +63,6 @@ export default function VendorAddProduct() {
         console.error("Failed to load categories", err);
       }
     };
-
     loadCategories();
   }, []);
 
@@ -81,8 +72,6 @@ export default function VendorAddProduct() {
 
   const sizesForCategory =
     (selectedCategory && CATEGORY_SIZES[selectedCategory.name]) || [];
-
-  /* ================= HANDLERS ================= */
 
   const toggleSize = (size: string) => {
     setProductData((prev) => ({
@@ -134,8 +123,12 @@ export default function VendorAddProduct() {
         body: formData,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("vendorToken"),
+          // ✅ do NOT set Content-Type for FormData
         },
       });
+
+      // ✅ Dispatch event so VendorProducts updates automatically
+      window.dispatchEvent(new CustomEvent("vendor-product-added"));
 
       alert("✅ Product added successfully");
 
@@ -154,8 +147,6 @@ export default function VendorAddProduct() {
       setLoading(false);
     }
   };
-
-  /* ================= UI ================= */
 
   return (
     <div className="p-8 max-w-3xl space-y-8">
@@ -180,10 +171,7 @@ export default function VendorAddProduct() {
             className="border p-2 rounded"
             value={productData.price}
             onChange={(e) =>
-              setProductData({
-                ...productData,
-                price: Number(e.target.value),
-              })
+              setProductData({ ...productData, price: Number(e.target.value) })
             }
           />
 
@@ -228,9 +216,7 @@ export default function VendorAddProduct() {
                   type="button"
                   onClick={() => toggleSize(size)}
                   className={`px-3 py-1 rounded-full border text-sm ${
-                    productData.sizes.includes(size)
-                      ? "bg-black text-white"
-                      : ""
+                    productData.sizes.includes(size) ? "bg-black text-white" : ""
                   }`}
                 >
                   {size}
@@ -279,10 +265,7 @@ export default function VendorAddProduct() {
           accept="image/*"
           className="border p-2 rounded w-full"
           onChange={(e) =>
-            setProductData({
-              ...productData,
-              image: e.target.files?.[0] || null,
-            })
+            setProductData({ ...productData, image: e.target.files?.[0] || null })
           }
         />
 
@@ -294,11 +277,7 @@ export default function VendorAddProduct() {
           />
         )}
 
-        <Button
-          className="w-full"
-          disabled={loading}
-          onClick={handleAddProduct}
-        >
+        <Button className="w-full" disabled={loading} onClick={handleAddProduct}>
           {loading ? "Adding..." : "Add Product"}
         </Button>
       </div>

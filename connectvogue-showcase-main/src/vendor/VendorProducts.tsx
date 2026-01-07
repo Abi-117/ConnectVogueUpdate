@@ -19,7 +19,6 @@ const VendorProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // redirect if not logged in
   if (!token) return <Navigate to="/vendor/login" />;
 
   useEffect(() => {
@@ -29,22 +28,25 @@ const VendorProducts = () => {
         const data = await safeFetch<Product[]>("/api/products/vendor", {
           headers: { Authorization: "Bearer " + token },
         });
-        // fallback empty array
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch vendor products", err);
-        setProducts([]); // fallback empty array
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
+
+    // ✅ Listen for newly added product
+    const handler = () => fetchProducts();
+    window.addEventListener("vendor-product-added", handler);
+    return () => window.removeEventListener("vendor-product-added", handler);
   }, [token]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Products</h1>
         <button
@@ -55,7 +57,6 @@ const VendorProducts = () => {
         </button>
       </div>
 
-      {/* Products */}
       {loading ? (
         <p>Loading products...</p>
       ) : (products?.length ?? 0) === 0 ? (
@@ -66,7 +67,10 @@ const VendorProducts = () => {
             <div key={p._id} className="bg-white rounded-xl shadow p-4">
               {p.image && (
                 <img
-                  src={p.image.startsWith("http") ? p.image : `${import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")}${p.image}`}
+                  src={p.image.startsWith("http")
+                    ? p.image
+                    : `${import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")}${p.image}`
+                  }
                   alt={p.name}
                   className="w-full h-40 object-cover rounded mb-3"
                 />
