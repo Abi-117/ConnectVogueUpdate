@@ -15,6 +15,7 @@ interface Product {
 const VendorProducts = () => {
   const token = localStorage.getItem("vendorToken");
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ const VendorProducts = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const data = await safeFetch<Product[]>("/api/products/vendor", {
+        const data = await safeFetch<Product[]>(`${API_URL}/products/vendor`, {
           headers: { Authorization: "Bearer " + token },
         });
         if (data) setProducts(data);
@@ -37,11 +38,10 @@ const VendorProducts = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [API_URL, token]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Products</h1>
         <button
@@ -52,7 +52,6 @@ const VendorProducts = () => {
         </button>
       </div>
 
-      {/* Products */}
       {loading ? (
         <p>Loading products...</p>
       ) : products.length === 0 ? (
@@ -63,15 +62,13 @@ const VendorProducts = () => {
             <div key={p._id} className="bg-white rounded-xl shadow p-4">
               {p.image && (
                 <img
-                  src={p.image.startsWith("http") ? p.image : `http://localhost:5000${p.image}`}
+                  src={p.image.startsWith("http") ? p.image : `${API_URL}${p.image}`}
                   alt={p.name}
                   className="w-full h-40 object-cover rounded mb-3"
                 />
               )}
-
               <h2 className="font-semibold text-lg">{p.name}</h2>
               <p className="text-gray-600">₹{p.price}</p>
-
               <span
                 className={`inline-block mt-2 px-3 py-1 rounded text-sm ${
                   p.status === "approved"
