@@ -1,52 +1,52 @@
 "use client";
 import { useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
+
 
 export default function AdminCreateVendor() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const createVendor = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const createVendor = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!email || !password) {
-      alert("Email & Password required");
+  if (!email || !password) {
+    alert("Email & Password required");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const data = await safeFetch<{ msg?: string }>(
+      "/api/users/admin/vendor",
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            "Bearer " + localStorage.getItem("adminToken"),
+        },
+        body: { email, password },
+      }
+    );
+
+    if (!data) {
+      alert("Failed to create vendor");
       return;
     }
 
-    setLoading(true);
+    alert("✅ Vendor created successfully");
+    setEmail("");
+    setPassword("");
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error creating vendor");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      const res = await fetch(
-        "http://localhost:5000/api/users/admin/vendor",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer " + localStorage.getItem("adminToken"),
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.msg || "Failed to create vendor");
-        return;
-      }
-
-      alert("✅ Vendor created successfully");
-      setEmail("");
-      setPassword("");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error creating vendor");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="p-8 max-w-md">

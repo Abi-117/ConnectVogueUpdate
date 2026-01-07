@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeFetch } from "../../src/api/fetchClient"; 
 
 interface Category {
   _id: string;
@@ -51,10 +52,9 @@ export default function AdminProduct() {
   const [colorHex, setColorHex] = useState("#000000");
   const [loading, setLoading] = useState(false);
 
-  // Fetch categories dynamically
+  // ✅ Fetch categories with safeFetch
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then(res => res.json())
+    safeFetch<Category[]>("/api/categories")
       .then(setCategories)
       .catch(console.error);
   }, []);
@@ -97,16 +97,11 @@ export default function AdminProduct() {
         image: productData.image || "",
       };
 
-      const res = await fetch("http://localhost:5000/api/adminproducts", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify(payload),
-});
-
-
-      if (!res.ok) throw new Error("Failed to add product");
+      // ✅ POST using safeFetch
+      await safeFetch("/api/adminproducts", {
+        method: "POST",
+        body: payload,
+      });
 
       alert("✅ Product added successfully");
       window.dispatchEvent(new Event("product-added"));

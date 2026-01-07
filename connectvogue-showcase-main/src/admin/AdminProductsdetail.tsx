@@ -1,19 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<any[]>([]);
 
+  // ✅ Fetch products using safeFetch
   useEffect(() => {
-    fetch("http://localhost:5000/api/productdetails")
-      .then(res => res.json())
-      .then(setProducts);
+    safeFetch<any[]>("/api/productdetails")
+      .then(setProducts)
+      .catch(console.error);
   }, []);
 
+  // ✅ Delete product using safeFetch
   const deleteProduct = async (id: string) => {
-    await fetch(`http://localhost:5000/api/productdetails/${id}`, {
-      method: "DELETE",
-    });
+    await safeFetch(`/api/productdetails/${id}`, { method: "DELETE" });
     setProducts(products.filter(p => p._id !== id));
   };
 

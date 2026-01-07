@@ -1,3 +1,4 @@
+// src/api/navigation.api.ts
 import { safeFetch } from './fetchClient';
 
 export interface NavigationItem {
@@ -6,4 +7,5 @@ export interface NavigationItem {
   href: string;
 }
 
-export const fetchNavigation = () => safeFetch<NavigationItem[]>('/api/navigation');
+export const fetchNavigation = () =>
+  safeFetch<NavigationItem[]>('/api/navigation');

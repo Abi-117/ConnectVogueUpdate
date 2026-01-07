@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Award, Users, Globe, Heart } from "lucide-react";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 const iconsMap: any = { Award, Users, Globe, Heart };
 
@@ -10,8 +11,7 @@ export default function About() {
   const [about, setAbout] = useState<any>(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/about")
-      .then(res => res.json())
+    safeFetch("/api/about")
       .then(data => setAbout(data))
       .catch(() => {});
   }, []);

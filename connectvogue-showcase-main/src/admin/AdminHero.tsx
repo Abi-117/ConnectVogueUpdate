@@ -1,15 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
+
 
 export default function AdminHero() {
   const [slides, setSlides] = useState<any[]>([]);
 
   // FETCH HERO SLIDES
   useEffect(() => {
-    fetch("http://localhost:5000/api/hero")
-      .then(res => res.json())
-      .then(data => setSlides(data || []));
-  }, []);
+  safeFetch<any[]>("/api/hero").then(data => {
+    if (Array.isArray(data)) {
+      setSlides(data);
+    } else {
+      setSlides([]);
+    }
+  });
+}, []);
+
 
   // HANDLE INPUT CHANGE
   const handleChange = (i: number, key: string, value: string) => {
@@ -46,13 +53,21 @@ export default function AdminHero() {
 
   // SAVE SLIDES
   const saveSlides = async () => {
-    await fetch("http://localhost:5000/api/hero", {
+  const res = await safeFetch(
+    "/api/hero",
+    {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(slides),
-    });
+      body: slides,
+    }
+  );
+
+  if (res) {
     alert("Hero slides updated ✅");
-  };
+  } else {
+    alert("Hero slides update failed ❌");
+  }
+};
+
 
   return (
     <div className="p-8 space-y-6">

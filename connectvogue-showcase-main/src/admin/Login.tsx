@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -9,19 +10,21 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:5000/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const data = await safeFetch<{ token: string; msg?: string }>("/api/admin/login", {
+        method: "POST",
+        body: { email, password }, // ✅ safeFetch auto stringifies
+      });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      localStorage.setItem("adminToken", data.token);
-      navigate("/admin/dashboard");
-    } else {
-      alert(data.msg);
+      if (data.token) {
+        localStorage.setItem("adminToken", data.token);
+        navigate("/admin/dashboard");
+      } else {
+        alert(data.msg || "Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("❌ Login failed. Check console.");
     }
   };
 

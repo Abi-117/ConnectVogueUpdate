@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
+
 
 interface Category {
   _id: string;
@@ -9,11 +11,15 @@ interface Category {
 export default function AdminNavbar() {
   const [categories, setCategories] = useState<Category[]>([]);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data));
-  }, []);
+ useEffect(() => {
+  safeFetch<Category[]>("/api/categories").then(data => {
+    if (Array.isArray(data)) {
+      setCategories(data);
+    } else {
+      setCategories([]);
+    }
+  });
+}, []);
 
   return (
     <div className="p-6 max-w-xl">

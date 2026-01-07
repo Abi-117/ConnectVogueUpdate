@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 interface Order {
   _id: string;
@@ -17,16 +18,15 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/orders")
-      .then(res => res.json())
-      .then(data => setOrders(data.orders));
+    safeFetch<{ orders: Order[] }>("/api/orders")
+      .then(data => setOrders(data.orders))
+      .catch(err => console.error(err));
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+    await safeFetch(`/api/orders/${id}/status`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: { status },
     });
 
     setOrders(prev =>

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 const ContactMessages = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ fetch using safeFetch
   const fetchMessages = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/contact");
-      const data = await res.json();
+      const data = await safeFetch<any[]>("/api/contact");
 
-      // 👇 VERY IMPORTANT
+      // 👇 VERY IMPORTANT: handle different data shapes
       if (Array.isArray(data)) {
         setMessages(data);
       } else if (data.contacts) {
@@ -25,11 +26,14 @@ const ContactMessages = () => {
     }
   };
 
+  // ✅ delete using safeFetch
   const deleteMessage = async (id: string) => {
-    await fetch(`http://localhost:5000/api/contact/${id}`, {
-      method: "DELETE",
-    });
-    fetchMessages();
+    try {
+      await safeFetch(`/api/contact/${id}`, { method: "DELETE" });
+      fetchMessages();
+    } catch (err) {
+      console.error("Delete error", err);
+    }
   };
 
   useEffect(() => {

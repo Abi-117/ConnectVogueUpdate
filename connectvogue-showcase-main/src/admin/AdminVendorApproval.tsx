@@ -1,6 +1,7 @@
-
+"use client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 interface Vendor {
     _id: string;
@@ -14,15 +15,12 @@ export default function AdminVendorApproval() {
     const [vendors, setVendors] = useState<Vendor[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // ✅ Fetch vendors using safeFetch
     const fetchVendors = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/users/admin/vendors/pending", {
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("adminToken"),
-                },
+            const data = await safeFetch<Vendor[]>("/api/users/admin/vendors/pending", {
+                headers: { Authorization: "Bearer " + localStorage.getItem("adminToken") },
             });
-            if (!res.ok) throw new Error("Failed to fetch vendors");
-            const data = await res.json();
             setVendors(data);
         } catch (err) {
             console.error(err);
@@ -32,16 +30,13 @@ export default function AdminVendorApproval() {
         }
     };
 
+    // ✅ Approve vendor using safeFetch
     const approveVendor = async (id: string) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/users/admin/vendors/${id}/approve`, {
+            await safeFetch(`/api/users/admin/vendors/${id}/approve`, {
                 method: "PUT",
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("adminToken"),
-                },
+                headers: { Authorization: "Bearer " + localStorage.getItem("adminToken") },
             });
-
-            if (!res.ok) throw new Error("Failed to approve vendor");
 
             toast.success("Vendor approved successfully");
             setVendors(vendors.filter(v => v._id !== id));

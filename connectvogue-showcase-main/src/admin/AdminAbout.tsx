@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
+
 
 const iconsList = ["Award", "Users", "Globe", "Heart"];
 
@@ -20,17 +22,18 @@ export default function AdminAbout() {
   });
 
   // Fetch About data
-  useEffect(() => {
-    fetch("http://localhost:5000/api/about")
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          console.log("ADMIN ABOUT DATA 👉", data);
-          setFormData(data);
-        }
-      })
-      .catch(err => console.error("ADMIN FETCH ERROR", err));
-  }, []);
+ useEffect(() => {
+  const loadAbout = async () => {
+    const data = await safeFetch<any>("/api/about");
+    if (data) {
+      console.log("ADMIN ABOUT DATA 👉", data);
+      setFormData(data);
+    }
+  };
+
+  loadAbout();
+}, []);
+
 
   const handleChange = (e: any, i?: number, arr?: string, key?: string) => {
     const { name, value } = e.target;
@@ -44,19 +47,21 @@ export default function AdminAbout() {
     }
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    try {
-      await fetch("http://localhost:5000/api/about", {
-        method: "PUT", // ✅ IMPORTANT
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      alert("About page updated successfully ✅");
-    } catch {
-      alert("Update failed ❌");
-    }
-  };
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
+
+  try {
+    await safeFetch("/api/about", {
+      method: "PUT",
+      body: formData,
+    });
+
+    alert("About page updated successfully ✅");
+  } catch {
+    alert("Update failed ❌");
+  }
+};
+
 
   return (
     <div className="p-8 space-y-6">

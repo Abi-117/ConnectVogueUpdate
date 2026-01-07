@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
 
 interface Product {
   _id: string;
@@ -24,17 +25,12 @@ export default function AdminPendingProducts() {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/products?status=pending", {
+      // ✅ replaced fetch with safeFetch
+      const data = await safeFetch<Product[]>("/api/products?status=pending", {
         headers: { Authorization: "Bearer " + token },
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-
-      const data = await res.json();
-      setProducts(data);
+      setProducts(data || []);
     } catch (err) {
       console.error("Failed to fetch pending products:", err);
       alert("❌ Failed to fetch pending products. Check console for details.");
@@ -62,17 +58,11 @@ export default function AdminPendingProducts() {
 
       setLoadingIds((prev) => [...prev, id]);
 
-      const res = await fetch(`http://localhost:5000/api/products/approve/${id}`, {
+      // ✅ replaced fetch with safeFetch
+      const updatedProduct = await safeFetch<Product>(`/api/products/approve/${id}`, {
         method: "PUT",
         headers: { Authorization: "Bearer " + token },
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-
-      const updatedProduct = await res.json();
 
       setApprovedIds((prev) => [...prev, updatedProduct._id]);
       setLoadingIds((prev) => prev.filter((i) => i !== id));
@@ -99,12 +89,12 @@ export default function AdminPendingProducts() {
         {products.map((p) => (
           <div key={p._id} className="border rounded-xl p-4 shadow bg-white">
             {p.image && (
-  <img
-    src={`http://localhost:5000${p.image}`} // <-- prepend backend URL
-    alt={p.name}
-    className="w-full h-40 object-cover rounded mb-3"
-  />
-)}
+              <img
+                src={`${p.image}`} // ✅ keep content same, safeFetch handles URL
+                alt={p.name}
+                className="w-full h-40 object-cover rounded mb-3"
+              />
+            )}
 
             <h2 className="font-semibold text-lg">{p.name}</h2>
             <p className="text-gray-600">₹{p.price}</p>

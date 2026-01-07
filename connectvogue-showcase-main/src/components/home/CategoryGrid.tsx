@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { safeFetch } from "../../api/fetchClient"; // ✅ added
 
 export const CategoryGrid = () => {
   const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data));
+    safeFetch<any[]>("/api/categories")
+      .then(data => setCategories(data))
+      .catch(err => console.error(err));
   }, []);
 
   if (!categories.length) return null;
@@ -28,16 +29,15 @@ export const CategoryGrid = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {categories.map((category, index) => (
             <Link
-  key={index}
-  to={`/category/${category.slug}`} // <-- change from `/${category.slug}`
-  className={cn(
-    "group relative overflow-hidden rounded-lg aspect-square md:aspect-[4/3] animate-fade-in",
-    category.featured &&
-      "md:col-span-2 md:row-span-2 md:aspect-square"
-  )}
-  style={{ animationDelay: `${index * 100}ms` }}
->
-
+              key={index}
+              to={`/category/${category.slug}`} // <-- unchanged
+              className={cn(
+                "group relative overflow-hidden rounded-lg aspect-square md:aspect-[4/3] animate-fade-in",
+                category.featured &&
+                  "md:col-span-2 md:row-span-2 md:aspect-square"
+              )}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <img
                 src={category.image}
                 alt={category.name}

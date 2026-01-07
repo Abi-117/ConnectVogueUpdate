@@ -1,23 +1,17 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/ProductCard";
-import {
-  fetchProductById,
-  fetchProductsByCategory,
-} from "@/api/products";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
-import {
-  Minus,
-  Plus,
-  ShoppingBag,
-  Heart,
-} from "lucide-react";
+import { Minus, Plus, ShoppingBag, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { safeFetch } from "../../src/api/fetchClient";
 
-const ProductDetail = () => {
+export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -28,37 +22,31 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [isLiked, setIsLiked] = useState(false);
-
-  // 🔹 Modal state for main image
   const [isImageOpen, setIsImageOpen] = useState(false);
 
-  // 🔥 Compute image URL (local + backend)
-  const imageUrl = product?.image
-    ? product.image.startsWith("http")
-      ? product.image
-      : `http://localhost:5000${product.image}`
-    : "/placeholder.png";
-
-  // 🔹 Fetch product
+  // Fetch product details
   useEffect(() => {
     if (!id) return;
 
-    fetchProductById(id)
-      .then((data) => {
+    const loadProduct = async () => {
+      try {
+        const data = await safeFetch(`/api/products/${id}`);
         setProduct(data);
         setSelectedSize(data?.sizes?.[0] || "");
         setSelectedColor(data?.colors?.[0]?.name || "");
 
-        // related products
         if (data?.category) {
-          fetchProductsByCategory(data.category).then((res) => {
-            setRelatedProducts(
-              res.filter((p: any) => p._id !== data._id).slice(0, 4)
-            );
-          });
+          const related = await safeFetch(`/api/products/category/${data.category}`);
+          setRelatedProducts(
+            related.filter((p: any) => p._id !== data._id).slice(0, 4)
+          );
         }
-      })
-      .catch(() => setProduct(null));
+      } catch {
+        setProduct(null);
+      }
+    };
+
+    loadProduct();
   }, [id]);
 
   if (!product) {
@@ -76,6 +64,12 @@ const ProductDetail = () => {
     );
   }
 
+  const imageUrl = product?.image
+    ? product.image.startsWith("http")
+      ? product.image
+      : `http://localhost:5000${product.image}`
+    : "/placeholder.png";
+
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -85,7 +79,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedSize, selectedColor);
-    toast.success("Added to cart");
+    toast.success("Added to cart ✅");
   };
 
   const handleBuyNow = () => {
@@ -97,7 +91,7 @@ const ProductDetail = () => {
     <Layout>
       <section className="py-24">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12">
-          {/* Image */}
+          {/* Product Image */}
           <div>
             <img
               src={imageUrl}
@@ -106,7 +100,6 @@ const ProductDetail = () => {
               onClick={() => setIsImageOpen(true)}
             />
 
-            {/* Image Modal */}
             {isImageOpen && (
               <div
                 className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
@@ -121,18 +114,13 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Info */}
+          {/* Product Info */}
           <div>
-            <p className="text-sm uppercase text-muted-foreground">
-              {product.brand}
-            </p>
-
+            <p className="text-sm uppercase text-muted-foreground">{product.brand}</p>
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 
             <div className="flex gap-3 mb-6">
-              <span className="text-2xl font-bold">
-                {formatPrice(product.price)}
-              </span>
+              <span className="text-2xl font-bold">{formatPrice(product.price)}</span>
               {product.originalPrice && (
                 <span className="line-through text-muted-foreground">
                   {formatPrice(product.originalPrice)}
@@ -140,9 +128,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <p className="mb-6 text-muted-foreground">
-              {product.description}
-            </p>
+            <p className="mb-6 text-muted-foreground">{product.description}</p>
 
             {/* Sizes */}
             {product.sizes?.length > 0 && (
@@ -187,19 +173,11 @@ const ProductDetail = () => {
 
             {/* Quantity */}
             <div className="flex items-center gap-3 mb-6">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              >
+              <Button size="icon" variant="outline" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
                 <Minus />
               </Button>
               <span>{quantity}</span>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => setQuantity(quantity + 1)}
-              >
+              <Button size="icon" variant="outline" onClick={() => setQuantity(quantity + 1)}>
                 <Plus />
               </Button>
             </div>
@@ -210,13 +188,8 @@ const ProductDetail = () => {
                 <ShoppingBag className="mr-2 w-4 h-4" /> Add to Cart
               </Button>
               <Button onClick={handleBuyNow}>Buy Now</Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsLiked(!isLiked)}
-              >
-                <Heart
-                  className={cn(isLiked && "fill-red-500 text-red-500")}
-                />
+              <Button variant="outline" onClick={() => setIsLiked(!isLiked)}>
+                <Heart className={cn(isLiked && "fill-red-500 text-red-500")} />
               </Button>
             </div>
           </div>
@@ -227,9 +200,7 @@ const ProductDetail = () => {
       {relatedProducts.length > 0 && (
         <section className="py-16 bg-muted">
           <div className="container mx-auto">
-            <h2 className="text-2xl font-bold mb-6">
-              You May Also Like
-            </h2>
+            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
                 <ProductCard key={p._id} product={p} />
@@ -240,6 +211,4 @@ const ProductDetail = () => {
       )}
     </Layout>
   );
-};
-
-export default ProductDetail;
+}

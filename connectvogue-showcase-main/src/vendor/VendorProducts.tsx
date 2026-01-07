@@ -1,5 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { safeFetch } from "../../src/api/fetchClient";
 
 interface Product {
   _id: string;
@@ -20,20 +23,14 @@ const VendorProducts = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(
-          "http://localhost:5000/api/products/vendor",
-          {
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          }
-        );
-
-        const data = await res.json();
-        if (res.ok) setProducts(data);
+        const data = await safeFetch<Product[]>("/api/products/vendor", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        if (data) setProducts(data);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch vendor products", err);
       } finally {
         setLoading(false);
       }
@@ -62,30 +59,27 @@ const VendorProducts = () => {
         <p>No products added yet</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map(p => (
-            <div
-              key={p._id}
-              className="bg-white rounded-xl shadow p-4"
-            >
+          {products.map((p) => (
+            <div key={p._id} className="bg-white rounded-xl shadow p-4">
               {p.image && (
                 <img
-  src={p.image ? `http://localhost:5000${p.image}` : ""}
-  alt={p.name}
-  className="w-full h-40 object-cover rounded mb-3"
-/>
-
+                  src={p.image.startsWith("http") ? p.image : `http://localhost:5000${p.image}`}
+                  alt={p.name}
+                  className="w-full h-40 object-cover rounded mb-3"
+                />
               )}
 
               <h2 className="font-semibold text-lg">{p.name}</h2>
               <p className="text-gray-600">₹{p.price}</p>
 
               <span
-                className={`inline-block mt-2 px-3 py-1 rounded text-sm ${p.status === "approved"
-                  ? "bg-green-200 text-green-800"
-                  : p.status === "pending"
+                className={`inline-block mt-2 px-3 py-1 rounded text-sm ${
+                  p.status === "approved"
+                    ? "bg-green-200 text-green-800"
+                    : p.status === "pending"
                     ? "bg-yellow-200 text-yellow-800"
                     : "bg-red-200 text-red-800"
-                  }`}
+                }`}
               >
                 {p.status}
               </span>

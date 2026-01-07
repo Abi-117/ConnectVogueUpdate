@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
 
 /* 🔥 Slug generator */
 const makeSlug = (text: string) =>
@@ -13,13 +14,12 @@ export default function AdminCategory() {
   const [categories, setCategories] = useState<any[]>([]);
 
   /* Fetch categories */
-  useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setCategories(data);
-      });
-  }, []);
+ useEffect(() => {
+  safeFetch<any[]>("/api/categories").then((data) => {
+    if (Array.isArray(data)) setCategories(data);
+  });
+}, []);
+
 
   /* Handle field change */
   const handleChange = (i: number, key: string, value: any) => {
@@ -64,13 +64,13 @@ export default function AdminCategory() {
 
   /* Save categories */
   const saveCategories = async () => {
-    await fetch("http://localhost:5000/api/categories", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(categories),
-    });
-    alert("✅ Categories saved successfully");
-  };
+  await safeFetch("/api/categories", {
+    method: "PUT",
+    body: categories,
+  });
+  alert("✅ Categories saved successfully");
+};
+
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-6">

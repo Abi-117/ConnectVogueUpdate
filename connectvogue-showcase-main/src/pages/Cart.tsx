@@ -1,3 +1,5 @@
+"use client";
+
 import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -9,20 +11,13 @@ const Cart = () => {
   const { items, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
-  // ✅ IMAGE FIX (IMPORTANT)
+  // ✅ IMAGE FIX
   const getImageUrl = (image?: string) => {
     if (!image) return '/placeholder.png';
-    return image.startsWith('http')
-      ? image
-      : `http://localhost:5000${image}`;
+    return image.startsWith('http') ? image : `http://localhost:5000${image}`;
   };
 
   const subtotal = getCartTotal();
@@ -55,16 +50,13 @@ const Cart = () => {
     <Layout>
       <section className="py-24 md:py-32">
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-3xl md:text-4xl font-bold mb-8">
-            Shopping Cart
-          </h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold mb-8">Shopping Cart</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {items.map((item, index) => {
                 const imageUrl = getImageUrl(item.product.image);
-
                 return (
                   <div
                     key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`}
@@ -86,9 +78,7 @@ const Cart = () => {
                         </h3>
                       </Link>
 
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {item.product.brand}
-                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">{item.product.brand}</p>
 
                       {(item.selectedSize || item.selectedColor) && (
                         <p className="text-sm text-muted-foreground mb-3">
@@ -101,22 +91,16 @@ const Cart = () => {
                       <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center border border-border rounded-lg">
                           <button
-                            onClick={() =>
-                              updateQuantity(item.product.id, item.quantity - 1)
-                            }
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             className="w-8 h-8 flex items-center justify-center hover:bg-secondary transition-colors"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
 
-                          <span className="w-10 text-center text-sm font-medium">
-                            {item.quantity}
-                          </span>
+                          <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
 
                           <button
-                            onClick={() =>
-                              updateQuantity(item.product.id, item.quantity + 1)
-                            }
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center hover:bg-secondary transition-colors"
                           >
                             <Plus className="w-3 h-3" />
@@ -124,9 +108,7 @@ const Cart = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                          <span className="font-semibold">
-                            {formatPrice(item.product.price * item.quantity)}
-                          </span>
+                          <span className="font-semibold">{formatPrice(item.product.price * item.quantity)}</span>
 
                           <button
                             onClick={() => {
@@ -162,9 +144,7 @@ const Cart = () => {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-lg p-6 shadow-soft sticky top-24">
-                <h2 className="font-display text-xl font-semibold mb-6">
-                  Order Summary
-                </h2>
+                <h2 className="font-display text-xl font-semibold mb-6">Order Summary</h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
@@ -174,9 +154,7 @@ const Cart = () => {
 
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">
-                      {shipping === 0 ? 'Free' : formatPrice(shipping)}
-                    </span>
+                    <span className="font-medium">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
                   </div>
 
                   {shipping > 0 && (
@@ -188,9 +166,7 @@ const Cart = () => {
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between">
                       <span className="font-semibold">Total</span>
-                      <span className="font-bold text-lg">
-                        {formatPrice(total)}
-                      </span>
+                      <span className="font-bold text-lg">{formatPrice(total)}</span>
                     </div>
                   </div>
                 </div>

@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { safeFetch } from "../../src/api/fetchClient";
 
-const API = "http://localhost:5000/api/footer";
 
 export default function AdminFooter() {
   const [footer, setFooter] = useState<any>({
@@ -27,19 +27,27 @@ export default function AdminFooter() {
   });
 
   useEffect(() => {
-    fetch(API)
-      .then((res) => res.json())
-      .then((data) => data && setFooter(data));
-  }, []);
+  safeFetch<any>("/api/footer").then((data) => {
+    if (data) setFooter(data);
+  });
+}, []);
 
-  const saveFooter = async () => {
-    await fetch(API, {
+ const saveFooter = async () => {
+  const res = await safeFetch(
+    "/api/footer",
+    {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(footer),
-    });
+      body: footer,
+    }
+  );
+
+  if (res) {
     alert("Footer updated successfully ✅");
-  };
+  } else {
+    alert("Footer update failed ❌");
+  }
+};
+
 
   const addLink = (key: "quickLinks" | "customerService") => {
   setFooter({

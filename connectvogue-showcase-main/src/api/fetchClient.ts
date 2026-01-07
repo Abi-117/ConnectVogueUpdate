@@ -1,26 +1,39 @@
-// src/admin/api/fetchClient.ts
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const safeFetch = async <T>(endpoint: string): Promise<T | null> => {
+interface FetchOptions {
+  method?: string;
+  body?: any;
+  headers?: HeadersInit;
+}
+
+export const safeFetch = async <T>(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<T | null> => {
   try {
-    const url = `${BASE_URL}${endpoint}`; // concatenate endpoint to base URL
-    const res = await fetch(url);
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: options.method || "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
 
     if (!res.ok) {
       const text = await res.text();
-      console.error('Fetch failed:', res.status, res.statusText, text);
+      console.error("Fetch failed:", res.status, text);
       return null;
     }
 
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = res.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
       return res.json();
-    } else {
-      console.error('Expected JSON but got:', await res.text());
-      return null;
     }
+
+    return null;
   } catch (err) {
-    console.error('Network error during fetch:', err);
+    console.error("Network error:", err);
     return null;
   }
 };

@@ -2,15 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { safeFetch } from "../../api/fetchClient"; // ✅ added
 
 export const HeroSlider = () => {
   const [slides, setSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/hero")
-      .then(res => res.json())
-      .then(data => setSlides(data));
+    safeFetch<any[]>("/api/hero")
+      .then(data => setSlides(data))
+      .catch(err => console.error(err));
   }, []);
 
   const nextSlide = useCallback(() => {
@@ -64,27 +65,25 @@ export const HeroSlider = () => {
               </p>
 
               {/* Buttons */}
-             <div className="flex justify-center items-center gap-4 flex-wrap">
-  {slide.btn1Text && slide.btn1Link && (
-    <Button asChild>
-      <Link to={slide.btn1Link}>{slide.btn1Text}</Link>
-    </Button>
-  )}
+              <div className="flex justify-center items-center gap-4 flex-wrap">
+                {slide.btn1Text && slide.btn1Link && (
+                  <Button asChild>
+                    <Link to={slide.btn1Link}>{slide.btn1Text}</Link>
+                  </Button>
+                )}
 
-  {slide.btn2Text && slide.btn2Link && (
-    <Button variant="destructive" asChild>
-      <Link to={slide.btn2Link}>{slide.btn2Text}</Link>
-    </Button>
-  )}
+                {slide.btn2Text && slide.btn2Link && (
+                  <Button variant="destructive" asChild>
+                    <Link to={slide.btn2Link}>{slide.btn2Text}</Link>
+                  </Button>
+                )}
 
-  {slide.btn3Text && slide.btn3Link && (
-    <Button variant="secondary" asChild>
-      <Link to={slide.btn3Link}>{slide.btn3Text}</Link>
-    </Button>
-  )}
-</div>
-
-
+                {slide.btn3Text && slide.btn3Link && (
+                  <Button variant="secondary" asChild>
+                    <Link to={slide.btn3Link}>{slide.btn3Text}</Link>
+                  </Button>
+                )}
+              </div>
 
             </div>
           </div>

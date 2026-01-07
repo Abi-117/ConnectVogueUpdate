@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { safeFetch } from "../../src/api/fetchClient";
+
 
 const iconOptions = ["Truck", "RefreshCw", "Shield", "Headphones"];
 
@@ -8,13 +10,13 @@ export default function AdminFeature() {
     { icon: "Truck", title: "", description: "", order: 1 },
   ]);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/features")
-      .then(res => res.json())
-      .then(data => {
-        if (data.length) setFeatures(data);
-      });
-  }, []);
+useEffect(() => {
+  safeFetch<any[]>("/api/features").then(data => {
+    if (Array.isArray(data) && data.length) {
+      setFeatures(data);
+    }
+  });
+}, []);
 
   const handleChange = (i: number, key: string, value: string) => {
     const updated = [...features];
@@ -35,13 +37,21 @@ export default function AdminFeature() {
   };
 
   const saveFeatures = async () => {
-    await fetch("http://localhost:5000/api/features", {
+  const res = await safeFetch(
+    "/api/features",
+    {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(features),
-    });
+      body: features,
+    }
+  );
+
+  if (res) {
     alert("Features updated ✅");
-  };
+  } else {
+    alert("Update failed ❌");
+  }
+};
+
 
   return (
     <div className="p-8 space-y-6">

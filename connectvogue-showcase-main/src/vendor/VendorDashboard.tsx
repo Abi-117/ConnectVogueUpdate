@@ -1,5 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { safeFetch } from "../../src/api/fetchClient";
 
 interface Product {
   _id: string;
@@ -17,19 +20,16 @@ const VendorDashboard = () => {
 
   if (!token) return <Navigate to="/vendor/login" />;
 
+  /* ================= FETCH PRODUCTS ================= */
   const fetchProducts = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/products/vendor",
-        {
-          headers: { Authorization: "Bearer " + token },
-        }
-      );
-
-      const data = await res.json();
-      if (res.ok) setProducts(data);
+      const data = await safeFetch<Product[]>("/api/products/vendor", {
+        headers: { Authorization: "Bearer " + token },
+      });
+      if (data) setProducts(data);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch products", err);
     } finally {
       setLoading(false);
     }
@@ -44,16 +44,19 @@ const VendorDashboard = () => {
     navigate("/vendor/login");
   };
 
-  const pending = products.filter(p => p.status === "pending").length;
-  const approved = products.filter(p => p.status === "approved").length;
-  const rejected = products.filter(p => p.status === "rejected").length;
+  const pending = products.filter((p) => p.status === "pending").length;
+  const approved = products.filter((p) => p.status === "approved").length;
+  const rejected = products.filter((p) => p.status === "rejected").length;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vendor Dashboard</h1>
-        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded">
+        <button
+          onClick={logout}
+          className="bg-red-500 text-white px-4 py-2 rounded"
+        >
           Logout
         </button>
       </div>
@@ -65,6 +68,7 @@ const VendorDashboard = () => {
         <Stat title="Rejected" count={rejected} color="red" />
       </div>
 
+      {/* Actions */}
       <button
         onClick={() => navigate("/vendor/add-product")}
         className="bg-black text-white px-4 py-2 rounded"
@@ -77,7 +81,6 @@ const VendorDashboard = () => {
       >
         📦 View My Products
       </button>
-
 
       {/* Product Table */}
       {loading ? (
@@ -94,17 +97,20 @@ const VendorDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map(p => (
+            {products.map((p) => (
               <tr key={p._id} className="border-b">
                 <td className="p-3">{p.name}</td>
                 <td className="p-3">₹{p.price}</td>
                 <td className="p-3">
-                  <span className={`px-3 py-1 rounded text-sm ${p.status === "approved"
-                      ? "bg-green-200 text-green-800"
-                      : p.status === "pending"
+                  <span
+                    className={`px-3 py-1 rounded text-sm ${
+                      p.status === "approved"
+                        ? "bg-green-200 text-green-800"
+                        : p.status === "pending"
                         ? "bg-yellow-200 text-yellow-800"
                         : "bg-red-200 text-red-800"
-                    }`}>
+                    }`}
+                  >
                     {p.status}
                   </span>
                 </td>
@@ -114,18 +120,22 @@ const VendorDashboard = () => {
         </table>
       )}
     </div>
-
   );
 };
 
 const Stat = ({ title, count, color }: any) => (
-  <div className={`bg-${color}-100 p-4 rounded shadow`}>
+  <div
+    className={`p-4 rounded shadow ${
+      color === "yellow"
+        ? "bg-yellow-100 text-yellow-800"
+        : color === "green"
+        ? "bg-green-100 text-green-800"
+        : "bg-red-100 text-red-800"
+    }`}
+  >
     <h3 className="text-sm">{title}</h3>
     <p className="text-2xl font-bold">{count}</p>
-
-
   </div>
-
 );
 
 export default VendorDashboard;

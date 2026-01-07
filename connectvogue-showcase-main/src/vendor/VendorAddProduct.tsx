@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeFetch } from "../../src/api/fetchClient";
 
 /* ================= TYPES ================= */
 
@@ -62,10 +63,16 @@ export default function VendorAddProduct() {
   /* ================= FETCH CATEGORIES ================= */
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then((res) => res.json())
-      .then(setCategories)
-      .catch(console.error);
+    const loadCategories = async () => {
+      try {
+        const data = await safeFetch<Category[]>("/api/categories");
+        setCategories(data);
+      } catch (err) {
+        console.error("Failed to load categories", err);
+      }
+    };
+
+    loadCategories();
   }, []);
 
   const selectedCategory = categories.find(
@@ -115,29 +122,20 @@ export default function VendorAddProduct() {
       formData.append("colors", JSON.stringify(productData.colors));
 
       if (productData.originalPrice) {
-        formData.append(
-          "originalPrice",
-          String(productData.originalPrice)
-        );
+        formData.append("originalPrice", String(productData.originalPrice));
       }
 
       if (productData.image) {
         formData.append("image", productData.image);
       }
 
-      const res = await fetch(
-        "http://localhost:5000/api/products/vendor",
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              "Bearer " + localStorage.getItem("vendorToken"),
-          },
-          body: formData,
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to add product");
+      await safeFetch("/api/products/vendor", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("vendorToken"),
+        },
+      });
 
       alert("✅ Product added successfully");
 
@@ -208,10 +206,7 @@ export default function VendorAddProduct() {
           className="border p-2 rounded w-full"
           value={productData.category}
           onChange={(e) =>
-            setProductData({
-              ...productData,
-              category: e.target.value,
-            })
+            setProductData({ ...productData, category: e.target.value })
           }
         >
           <option value="">Select Category</option>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { safeFetch } from "../../src/api/fetchClient"; // ✅ added
 
 const CompanyContact = () => {
   const [form, setForm] = useState({
@@ -12,19 +13,29 @@ const CompanyContact = () => {
     workingHours: "",
   });
 
+  // ✅ fetch using safeFetch
   const fetchData = async () => {
-    const res = await fetch("http://localhost:5000/api/company-contact");
-    const data = await res.json();
-    if (data) setForm(data);
+    try {
+      const data = await safeFetch("/api/company-contact");
+      if (data) setForm(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load contact details");
+    }
   };
 
+  // ✅ submit using safeFetch
   const handleSubmit = async () => {
-    await fetch("http://localhost:5000/api/company-contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    toast.success("Contact details updated");
+    try {
+      await safeFetch("/api/company-contact", {
+        method: "POST",
+        body: form,
+      });
+      toast.success("Contact details updated");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update contact details");
+    }
   };
 
   useEffect(() => {

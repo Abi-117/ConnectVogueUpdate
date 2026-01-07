@@ -5,6 +5,7 @@ import {
   Shield,
   Headphones,
 } from "lucide-react";
+import { safeFetch } from "../../api/fetchClient"; // ✅ added
 
 const iconsMap: any = {
   Truck,
@@ -17,9 +18,9 @@ export const FeatureBanner = () => {
   const [features, setFeatures] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/features")
-      .then(res => res.json())
-      .then(data => setFeatures(data));
+    safeFetch<any[]>("/api/features")
+      .then(data => setFeatures(data))
+      .catch(err => console.error(err));
   }, []);
 
   if (!features.length) return null;
