@@ -32,7 +32,7 @@ const Sidebar = () => {
         <Link to="/admin/footer">Footer</Link>
         <Link to="/admin/pending-products">Pending Products</Link>
         {/* <Link to="/admin/create-vendor">Create Vendor</Link> */}
-        {/* <Link to="/admin/vendor-approvals">Vendor Approvals</Link> */}
+        <Link to="/admin/vendor-approvals">Vendor Approvals</Link>
 
 
         <button onClick={logout} className="text-left mt-6 text-red-400">

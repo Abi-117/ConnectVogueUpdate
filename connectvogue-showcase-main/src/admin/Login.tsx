@@ -8,25 +8,31 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const data = await safeFetch<{ token: string; msg?: string }>("/api/admin/login", {
+  try {
+    const data = await safeFetch<{ token?: string; msg?: string }>(
+      "/api/admin/login",
+      {
         method: "POST",
-        body: { email, password }, // ✅ safeFetch auto stringifies
-      });
-
-      if (data.token) {
-        localStorage.setItem("adminToken", data.token);
-        navigate("/admin/dashboard");
-      } else {
-        alert(data.msg || "Login failed");
+        body: { email, password },
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      alert("❌ Login failed. Check console.");
+    );
+
+    // ✅ VERY IMPORTANT CHECK
+    if (!data || !data.token) {
+      alert(data?.msg || "Admin not found or invalid credentials");
+      return;
     }
-  };
+
+    localStorage.setItem("adminToken", data.token);
+    navigate("/admin/dashboard");
+
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("❌ Login failed. Check backend.");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

@@ -23,7 +23,7 @@ interface Product {
   description?: string;
   sizes: string[];
   colors: Color[];
-  image?: string; // URL instead of File
+  image?: string; 
 }
 
 const CATEGORY_SIZES: Record<string, string[]> = {
