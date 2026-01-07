@@ -1,5 +1,4 @@
-// src/admin/api/navigation.api.ts
-import { safeFetch } from './fetchClient'; // use relative path to fetchClient
+import { safeFetch } from './fetchClient';
 
 export interface NavigationItem {
   _id: string;
@@ -7,5 +6,4 @@ export interface NavigationItem {
   href: string;
 }
 
-// No need for hardcoded localhost URL anymore
-export const fetchNavigation = () => safeFetch<NavigationItem[]>(`/api/navigation`);
+export const fetchNavigation = () => safeFetch<NavigationItem[]>('/api/navigation');
