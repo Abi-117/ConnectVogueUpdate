@@ -15,11 +15,12 @@ interface Product {
 const VendorProducts = () => {
   const token = localStorage.getItem("vendorToken");
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_BASE_URL;
+  const API_URL = import.meta.env.VITE_API_BASE_URL; // local or Render URL
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // redirect if not logged in
   if (!token) return <Navigate to="/vendor/login" />;
 
   useEffect(() => {
@@ -29,9 +30,11 @@ const VendorProducts = () => {
         const data = await safeFetch<Product[]>(`${API_URL}/products/vendor`, {
           headers: { Authorization: "Bearer " + token },
         });
-        if (data) setProducts(data);
+        // always ensure array to avoid null.length / null.map crash
+        setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch vendor products", err);
+        setProducts([]); // fallback empty array
       } finally {
         setLoading(false);
       }
@@ -42,6 +45,7 @@ const VendorProducts = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Products</h1>
         <button
@@ -52,13 +56,14 @@ const VendorProducts = () => {
         </button>
       </div>
 
+      {/* Products */}
       {loading ? (
         <p>Loading products...</p>
-      ) : products.length === 0 ? (
+      ) : (products?.length ?? 0) === 0 ? (
         <p>No products added yet</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map((p) => (
+          {products?.map((p) => (
             <div key={p._id} className="bg-white rounded-xl shadow p-4">
               {p.image && (
                 <img
@@ -67,8 +72,10 @@ const VendorProducts = () => {
                   className="w-full h-40 object-cover rounded mb-3"
                 />
               )}
+
               <h2 className="font-semibold text-lg">{p.name}</h2>
               <p className="text-gray-600">₹{p.price}</p>
+
               <span
                 className={`inline-block mt-2 px-3 py-1 rounded text-sm ${
                   p.status === "approved"
