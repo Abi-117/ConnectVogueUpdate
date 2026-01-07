@@ -68,9 +68,9 @@ const VendorProducts = () => {
               {p.image && (
                 <img
                   src={p.image.startsWith("http")
-                    ? p.image
-                    : `${import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")}${p.image}`
-                  }
+      ? p.image
+      : `https://connectvogue.onrender.com${p.image}`}
+
                   alt={p.name}
                   className="w-full h-40 object-cover rounded mb-3"
                 />

@@ -102,7 +102,10 @@ export default function AdminPendingProducts() {
           <div key={p._id} className="border rounded-xl p-4 shadow bg-white">
             {p.image && (
               <img
-                src={p.image.startsWith("http") ? p.image : `${BASE_URL}${p.image}`}
+                src={p.image.startsWith("http")
+      ? p.image
+      : `https://connectvogue.onrender.com${p.image}`}
+
                 alt={p.name}
                 className="w-full h-40 object-cover rounded mb-3"
               />

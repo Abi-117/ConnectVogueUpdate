@@ -1,4 +1,4 @@
-const BASE_URL = "https://connectvogue.onrender.com";
+const BASE_URL = "https://connectvogue.onrender.com"; // LIVE backend HTTPS
 
 interface FetchOptions {
   method?: string;
