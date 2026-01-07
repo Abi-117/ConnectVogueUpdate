@@ -42,7 +42,6 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  console.log("API URL:", import.meta.env.VITE_API_URL);
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
