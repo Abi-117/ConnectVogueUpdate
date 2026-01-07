@@ -119,16 +119,28 @@ export default function AdminCategory() {
           </div>
 
           {/* Image */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Image
-            </label>
-            <input
-              value={cat.image}
-              onChange={(e) => handleChange(i, "image", e.target.value)}
-              className="border p-2 w-full rounded"
-            />
-          </div>
+          {/* Image */}
+<div>
+  <label className="block text-sm font-medium mb-1">Image</label>
+  <input
+    value={cat.image}
+    onChange={(e) => handleChange(i, "image", e.target.value)}
+    className="border p-2 w-full rounded"
+    placeholder="Enter full image URL or relative path"
+  />
+  {cat.image && (
+    <img
+      src={
+        cat.image.startsWith("http")
+          ? cat.image
+          : `https://connectvogue.onrender.com${cat.image.startsWith("/") ? "" : "/"}${cat.image}`
+      }
+      alt={cat.name}
+      className="w-32 h-32 object-cover rounded mt-2"
+    />
+  )}
+</div>
+
 
           {/* Options */}
           <div className="flex items-center gap-6">
