@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { safeFetch } from "../../src/api/fetchClient";
@@ -40,6 +39,7 @@ const CATEGORY_SIZES: Record<string, string[]> = {
 
 export default function VendorAddProduct() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [productData, setProductData] = useState<Product>({
     name: "",
@@ -52,18 +52,9 @@ export default function VendorAddProduct() {
 
   const [colorName, setColorName] = useState("");
   const [colorHex, setColorHex] = useState("#000000");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const data = await safeFetch<Category[]>("/api/categories");
-        setCategories(data);
-      } catch (err) {
-        console.error("Failed to load categories", err);
-      }
-    };
-    loadCategories();
+    safeFetch<Category[]>("/api/categories").then(setCategories).catch(console.error);
   }, []);
 
   const selectedCategory = categories.find(
@@ -84,53 +75,46 @@ export default function VendorAddProduct() {
 
   const addColor = () => {
     if (!colorName) return;
-
     setProductData((prev) => ({
       ...prev,
       colors: [...prev.colors, { name: colorName, hex: colorHex }],
     }));
-
     setColorName("");
     setColorHex("#000000");
   };
 
   const handleAddProduct = async () => {
+    if (!productData.name || !productData.price || !productData.category) {
+      alert("Name, Price & Category are required");
+      return;
+    }
+
     try {
-      if (!productData.name || !productData.price || !productData.category) {
-        alert("⚠️ Name, Price & Category are required");
-        return;
-      }
-
       setLoading(true);
-
       const formData = new FormData();
+
       formData.append("name", productData.name);
       formData.append("price", String(productData.price));
       formData.append("category", productData.category);
       formData.append("sizes", JSON.stringify(productData.sizes));
       formData.append("colors", JSON.stringify(productData.colors));
 
-      if (productData.originalPrice) {
+      if (productData.originalPrice)
         formData.append("originalPrice", String(productData.originalPrice));
-      }
 
-      if (productData.image) {
+      if (productData.image)
         formData.append("image", productData.image);
-      }
 
       await safeFetch("/api/products/vendor", {
         method: "POST",
         body: formData,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("vendorToken"),
-          // ✅ do NOT set Content-Type for FormData
         },
       });
 
-      // ✅ Dispatch event so VendorProducts updates automatically
       window.dispatchEvent(new CustomEvent("vendor-product-added"));
-
-      alert("✅ Product added successfully");
+      alert("Product added successfully");
 
       setProductData({
         name: "",
@@ -140,9 +124,6 @@ export default function VendorAddProduct() {
         colors: [],
         image: null,
       });
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error adding product");
     } finally {
       setLoading(false);
     }
@@ -153,8 +134,12 @@ export default function VendorAddProduct() {
       <h1 className="text-3xl font-bold">Vendor – Add Product</h1>
 
       <div className="bg-white border rounded-xl p-6 space-y-6 shadow">
+
         {/* Product Name */}
+        <label htmlFor="productName" className="sr-only">Product Name</label>
         <input
+          id="productName"
+          name="productName"
           placeholder="Product Name"
           className="border p-2 rounded w-full"
           value={productData.name}
@@ -165,7 +150,10 @@ export default function VendorAddProduct() {
 
         {/* Price */}
         <div className="grid grid-cols-2 gap-4">
+          <label htmlFor="price" className="sr-only">Price</label>
           <input
+            id="price"
+            name="price"
             type="number"
             placeholder="Price"
             className="border p-2 rounded"
@@ -175,7 +163,10 @@ export default function VendorAddProduct() {
             }
           />
 
+          <label htmlFor="originalPrice" className="sr-only">Original Price</label>
           <input
+            id="originalPrice"
+            name="originalPrice"
             type="number"
             placeholder="Original Price"
             className="border p-2 rounded"
@@ -190,7 +181,10 @@ export default function VendorAddProduct() {
         </div>
 
         {/* Category */}
+        <label htmlFor="category" className="sr-only">Category</label>
         <select
+          id="category"
+          name="category"
           className="border p-2 rounded w-full"
           value={productData.category}
           onChange={(e) =>
@@ -216,7 +210,9 @@ export default function VendorAddProduct() {
                   type="button"
                   onClick={() => toggleSize(size)}
                   className={`px-3 py-1 rounded-full border text-sm ${
-                    productData.sizes.includes(size) ? "bg-black text-white" : ""
+                    productData.sizes.includes(size)
+                      ? "bg-black text-white"
+                      : ""
                   }`}
                 >
                   {size}
@@ -230,37 +226,34 @@ export default function VendorAddProduct() {
         <div>
           <p className="font-medium mb-2">Colors</p>
           <div className="flex gap-2">
+            <label htmlFor="colorName" className="sr-only">Color Name</label>
             <input
+              id="colorName"
+              name="colorName"
               placeholder="Color name"
               className="border p-2 rounded flex-1"
               value={colorName}
               onChange={(e) => setColorName(e.target.value)}
             />
+
+            <label htmlFor="colorHex" className="sr-only">Color Picker</label>
             <input
+              id="colorHex"
+              name="colorHex"
               type="color"
               value={colorHex}
               onChange={(e) => setColorHex(e.target.value)}
             />
-            <Button type="button" onClick={addColor}>
-              Add
-            </Button>
-          </div>
 
-          <div className="flex gap-2 mt-3 flex-wrap">
-            {productData.colors.map((c, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 rounded-full border text-sm"
-                style={{ color: c.hex, borderColor: c.hex }}
-              >
-                {c.name}
-              </span>
-            ))}
+            <Button type="button" onClick={addColor}>Add</Button>
           </div>
         </div>
 
         {/* Image Upload */}
+        <label htmlFor="productImage" className="sr-only">Product Image</label>
         <input
+          id="productImage"
+          name="productImage"
           type="file"
           accept="image/*"
           className="border p-2 rounded w-full"
@@ -268,14 +261,6 @@ export default function VendorAddProduct() {
             setProductData({ ...productData, image: e.target.files?.[0] || null })
           }
         />
-
-        {productData.image && (
-          <img
-            src={URL.createObjectURL(productData.image)}
-            alt="Preview"
-            className="mt-2 w-32 h-32 object-cover rounded"
-          />
-        )}
 
         <Button className="w-full" disabled={loading} onClick={handleAddProduct}>
           {loading ? "Adding..." : "Add Product"}
