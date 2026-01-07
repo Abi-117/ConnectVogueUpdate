@@ -1,6 +1,4 @@
-// src/admin/api/footer.api.ts
+// src/api/footer.ts
 import { safeFetch } from './fetchClient';
 
-const API_URL = 'http://localhost:5000/api/footer';
-
-export const fetchFooter = () => safeFetch(API_URL);
+export const fetchFooter = () => safeFetch('/api/footer');
