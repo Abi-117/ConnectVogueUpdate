@@ -11,6 +11,10 @@ import { Minus, Plus, ShoppingBag, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeFetch } from "../../src/api/fetchClient";
 
+/* ✅ BASE URL (same logic as fetchClient) */
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,22 +28,29 @@ export default function ProductDetail() {
   const [isLiked, setIsLiked] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
 
-  // Fetch product details
+  /* ================= FETCH PRODUCT ================= */
+
   useEffect(() => {
     if (!id) return;
 
     const loadProduct = async () => {
       try {
-        const data = await safeFetch(`/api/products/${id}`);
+        const data = await safeFetch<any>(`/api/products/${id}`);
+        if (!data) return;
+
         setProduct(data);
         setSelectedSize(data?.sizes?.[0] || "");
         setSelectedColor(data?.colors?.[0]?.name || "");
 
         if (data?.category) {
-          const related = await safeFetch(`/api/products/category/${data.category}`);
-          setRelatedProducts(
-            related.filter((p: any) => p._id !== data._id).slice(0, 4)
+          const related = await safeFetch<any[]>(
+            `/api/products/category/${data.category}`
           );
+          if (related) {
+            setRelatedProducts(
+              related.filter((p) => p._id !== data._id).slice(0, 4)
+            );
+          }
         }
       } catch {
         setProduct(null);
@@ -64,10 +75,11 @@ export default function ProductDetail() {
     );
   }
 
+  /* ✅ IMAGE URL FIX (no localhost hardcode) */
   const imageUrl = product?.image
     ? product.image.startsWith("http")
       ? product.image
-      : `http://localhost:5000${product.image}`
+      : `${BASE_URL}${product.image}`
     : "/placeholder.png";
 
   const formatPrice = (price: number) =>
@@ -116,11 +128,15 @@ export default function ProductDetail() {
 
           {/* Product Info */}
           <div>
-            <p className="text-sm uppercase text-muted-foreground">{product.brand}</p>
+            <p className="text-sm uppercase text-muted-foreground">
+              {product.brand}
+            </p>
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 
             <div className="flex gap-3 mb-6">
-              <span className="text-2xl font-bold">{formatPrice(product.price)}</span>
+              <span className="text-2xl font-bold">
+                {formatPrice(product.price)}
+              </span>
               {product.originalPrice && (
                 <span className="line-through text-muted-foreground">
                   {formatPrice(product.originalPrice)}
@@ -128,7 +144,9 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <p className="mb-6 text-muted-foreground">{product.description}</p>
+            <p className="mb-6 text-muted-foreground">
+              {product.description}
+            </p>
 
             {/* Sizes */}
             {product.sizes?.length > 0 && (
@@ -141,7 +159,8 @@ export default function ProductDetail() {
                       onClick={() => setSelectedSize(size)}
                       className={cn(
                         "px-4 py-2 border rounded",
-                        selectedSize === size && "bg-primary text-white"
+                        selectedSize === size &&
+                          "bg-primary text-white"
                       )}
                     >
                       {size}
@@ -154,7 +173,9 @@ export default function ProductDetail() {
             {/* Colors */}
             {product.colors?.length > 0 && (
               <div className="mb-6">
-                <p className="mb-2 font-medium">Color: {selectedColor}</p>
+                <p className="mb-2 font-medium">
+                  Color: {selectedColor}
+                </p>
                 <div className="flex gap-2">
                   {product.colors.map((c: any) => (
                     <button
@@ -162,7 +183,8 @@ export default function ProductDetail() {
                       style={{ background: c.hex }}
                       className={cn(
                         "w-8 h-8 rounded-full",
-                        selectedColor === c.name && "ring-2 ring-primary"
+                        selectedColor === c.name &&
+                          "ring-2 ring-primary"
                       )}
                       onClick={() => setSelectedColor(c.name)}
                     />
@@ -173,11 +195,21 @@ export default function ProductDetail() {
 
             {/* Quantity */}
             <div className="flex items-center gap-3 mb-6">
-              <Button size="icon" variant="outline" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() =>
+                  setQuantity(Math.max(1, quantity - 1))
+                }
+              >
                 <Minus />
               </Button>
               <span>{quantity}</span>
-              <Button size="icon" variant="outline" onClick={() => setQuantity(quantity + 1)}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => setQuantity(quantity + 1)}
+              >
                 <Plus />
               </Button>
             </div>
@@ -185,11 +217,19 @@ export default function ProductDetail() {
             {/* Actions */}
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleAddToCart}>
-                <ShoppingBag className="mr-2 w-4 h-4" /> Add to Cart
+                <ShoppingBag className="mr-2 w-4 h-4" />
+                Add to Cart
               </Button>
               <Button onClick={handleBuyNow}>Buy Now</Button>
-              <Button variant="outline" onClick={() => setIsLiked(!isLiked)}>
-                <Heart className={cn(isLiked && "fill-red-500 text-red-500")} />
+              <Button
+                variant="outline"
+                onClick={() => setIsLiked(!isLiked)}
+              >
+                <Heart
+                  className={cn(
+                    isLiked && "fill-red-500 text-red-500"
+                  )}
+                />
               </Button>
             </div>
           </div>
@@ -200,7 +240,9 @@ export default function ProductDetail() {
       {relatedProducts.length > 0 && (
         <section className="py-16 bg-muted">
           <div className="container mx-auto">
-            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              You May Also Like
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
                 <ProductCard key={p._id} product={p} />

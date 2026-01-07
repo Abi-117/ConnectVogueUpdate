@@ -39,7 +39,7 @@ const app = express();
 // Middleware
 // ----------------------
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*' // safe fallback
+  origin: process.env.FRONTEND_URL || '*' 
 }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

@@ -11,7 +11,12 @@ export const safeFetch = async <T>(
   options: FetchOptions = {}
 ): Promise<T | null> => {
   try {
-    const url = `${BASE_URL.replace(/\/$/, "")}${endpoint}`;
+    // Remove trailing slash from BASE_URL
+    const url = `${BASE_URL.replace(/\/$/, "")}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+
+    console.log("%c[Fetch Debug] URL:", "color: blue;", url);
+    console.log("%c[Fetch Debug] Options:", "color: green;", options);
+
     const res = await fetch(url, {
       method: options.method || "GET",
       headers: {
@@ -23,18 +28,22 @@ export const safeFetch = async <T>(
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("Fetch failed:", res.status, text);
+      console.error("%c[Fetch Error] Status:", "color: red;", res.status, text);
       return null;
     }
 
     const contentType = res.headers.get("content-type");
     if (contentType?.includes("application/json")) {
-      return res.json();
+      const data = await res.json();
+      console.log("%c[Fetch Debug] Response:", "color: purple;", data);
+      return data;
     }
 
+    console.warn("%c[Fetch Warning] Non-JSON response", "color: orange;");
     return null;
   } catch (err) {
-    console.error("Network error:", err);
+    console.error("%c[Network Error]:", "color: red; font-weight: bold;", err);
+    console.warn("Check if backend allows CORS and URL is reachable.");
     return null;
   }
 };
