@@ -1,4 +1,4 @@
-// src/api/navigation.ts
+// src/admin/api/navigation.api.ts
 import { safeFetch } from '../api/fetchClient';
 
 export interface NavigationItem {
@@ -7,7 +7,6 @@ export interface NavigationItem {
   href: string;
 }
 
-const API_URL = "http://localhost:5000/api/navigation";
+const API_URL = 'http://localhost:5000/api/navigation';
 
-export const fetchNavigation = (): Promise<NavigationItem[] | null> =>
-  safeFetch<NavigationItem[]>(API_URL);
+export const fetchNavigation = () => safeFetch<NavigationItem[]>(API_URL);
