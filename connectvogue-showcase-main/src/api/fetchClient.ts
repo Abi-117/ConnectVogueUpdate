@@ -1,6 +1,9 @@
 // src/admin/api/fetchClient.ts
-export const safeFetch = async <T>(url: string): Promise<T | null> => {
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export const safeFetch = async <T>(endpoint: string): Promise<T | null> => {
   try {
+    const url = `${BASE_URL}${endpoint}`; // concatenate endpoint to base URL
     const res = await fetch(url);
 
     if (!res.ok) {

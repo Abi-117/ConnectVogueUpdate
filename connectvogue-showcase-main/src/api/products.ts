@@ -1,11 +1,9 @@
 // src/admin/api/products.api.ts
 import { safeFetch } from './fetchClient';
 
-const API_URL = 'http://localhost:5000/api/products';
-
-export const fetchProducts = () => safeFetch(`${API_URL}?status=approved`);
-export const fetchProductById = (id: string) => safeFetch(`${API_URL}/${id}`);
+export const fetchProducts = () => safeFetch(`/api/products?status=approved`);
+export const fetchProductById = (id: string) => safeFetch(`/api/products/${id}`);
 export const fetchProductsByCategory = (category: string) =>
-  safeFetch(`${API_URL}/category/${category}?status=approved`);
-export const fetchNewArrivals = () => safeFetch(`${API_URL}/new?status=approved`);
-export const fetchTrendingProducts = () => safeFetch(`${API_URL}/trending?status=approved`);
+  safeFetch(`/api/products/category/${category}?status=approved`);
+export const fetchNewArrivals = () => safeFetch(`/api/products/new?status=approved`);
+export const fetchTrendingProducts = () => safeFetch(`/api/products/trending?status=approved`);
