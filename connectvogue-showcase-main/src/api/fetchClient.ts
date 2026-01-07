@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 interface FetchOptions {
   method?: string;
@@ -11,7 +11,8 @@ export const safeFetch = async <T>(
   options: FetchOptions = {}
 ): Promise<T | null> => {
   try {
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
+    const url = `${BASE_URL.replace(/\/$/, "")}${endpoint}`;
+    const res = await fetch(url, {
       method: options.method || "GET",
       headers: {
         "Content-Type": "application/json",
