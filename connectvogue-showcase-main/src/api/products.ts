@@ -1,47 +1,11 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_URL = `${BASE_URL}/api/products`;
+// src/api/products.ts
+import { safeFetch } from './fetchClient';
 
-// Generic safe fetch for JSON
-const safeFetchJSON = async (url: string) => {
-  try {
-    const res = await fetch(url);
-    const contentType = res.headers.get('content-type');
+const API_URL = "http://localhost:5000/api/products";
 
-    if (!res.ok) {
-      const text = await res.text(); // log raw response for debugging
-      console.error('Fetch failed:', res.status, res.statusText, text);
-      return []; // fallback to empty array
-    }
-
-    if (contentType && contentType.includes('application/json')) {
-      return res.json();
-    } else {
-      const text = await res.text();
-      console.error('Expected JSON but got:', text);
-      return []; // fallback to empty array
-    }
-  } catch (err) {
-    console.error('Fetch error:', err);
-    return []; // fallback to empty array
-  }
-};
-
-// Fetch all approved products
-export const fetchProducts = () => safeFetchJSON(`${API_URL}?status=approved`);
-
-// Fetch product by ID (for details page)
-export const fetchProductById = async (id: string) => {
-  const data = await safeFetchJSON(`${API_URL}/${id}`);
-  // data may be an array if the API returns a single object differently, handle accordingly
-  return Array.isArray(data) ? data[0] || null : data;
-};
-
-// Fetch products by category (only approved)
+export const fetchProducts = () => safeFetch(`${API_URL}?status=approved`);
+export const fetchProductById = (id: string) => safeFetch(`${API_URL}/${id}`);
 export const fetchProductsByCategory = (category: string) =>
-  safeFetchJSON(`${API_URL}/category/${category}?status=approved`);
-
-// Fetch new arrivals (only approved)
-export const fetchNewArrivals = () => safeFetchJSON(`${API_URL}/new?status=approved`);
-
-// Fetch trending products (only approved)
-export const fetchTrendingProducts = () => safeFetchJSON(`${API_URL}/trending?status=approved`);
+  safeFetch(`${API_URL}/category/${category}?status=approved`);
+export const fetchNewArrivals = () => safeFetch(`${API_URL}/new?status=approved`);
+export const fetchTrendingProducts = () => safeFetch(`${API_URL}/trending?status=approved`);
